@@ -83,14 +83,16 @@ def concat():
     clips = []  
 
     try: # create a list of segments
-        for input in glob.glob("segments/*"+str(funcs.file_extention)):
-            temp_clips.append(input)
+        for i in glob.glob("segments/*"+str(funcs.file_extention)):
+            temp_clips.append(i)
     except:
         pass
     
-    for input in temp_clips.sort(): # create video objects
-        print(input)
-        clips.append(VideoFileClip(input))
+    temp_clips.sort()
+
+    for i in temp_clips: # create video objects
+        print(i)
+        clips.append(VideoFileClip(i))
     
     final = concatenate_videoclips(clips)
     final.write_videofile("segments/output"+str(funcs.file_extention), codec = "libx264", logger = None)
