@@ -87,10 +87,12 @@ def concat():
     print(clips)  
     final = concatenate_videoclips(clips)
     final.write_videofile("segments/output"+str(funcs.file_extention), codec = "libx264", logger = None)
+    bot.send_message(funcs.user_id,"Concatenating video.")
     return 0
 
 def send_video():
     video = open("segments/output"+str(funcs.file_extention), "rb") # send the video
+    bot.send_message(funcs.user_id,"Sending video.")
     bot.send_video(funcs.user_id, video)
     video.close()
     return 0
