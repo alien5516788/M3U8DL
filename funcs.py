@@ -85,7 +85,7 @@ def concat():
             clips.append(VideoFileClip(input))
     except:
         pass
-    print(clips)  
+    clips.sort()
     final = concatenate_videoclips(clips)
     final.write_videofile("segments/output"+str(funcs.file_extention), codec = "libx264", logger = None)
     return 0
