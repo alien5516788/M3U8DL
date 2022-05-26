@@ -77,7 +77,7 @@ def check_size():
 
 
 def concat(): 
-    def concat(): 
+
     bot.send_message(funcs.user_id,"Concatenating video.")
     temp_clips = []
     clips = []  
