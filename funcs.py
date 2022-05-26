@@ -77,6 +77,7 @@ def check_size():
 
 
 def concat(): 
+    bot.send_message(funcs.user_id,"Concatenating video.")
     clips = []  
     try:
         for input in glob.glob("segments/*"+str(funcs.file_extention)):
@@ -87,12 +88,11 @@ def concat():
     print(clips)  
     final = concatenate_videoclips(clips)
     final.write_videofile("segments/output"+str(funcs.file_extention), codec = "libx264", logger = None)
-    bot.send_message(funcs.user_id,"Concatenating video.")
     return 0
 
 def send_video():
-    video = open("segments/output"+str(funcs.file_extention), "rb") # send the video
     bot.send_message(funcs.user_id,"Sending video.")
+    video = open("segments/output"+str(funcs.file_extention), "rb") # send the video
     bot.send_video(funcs.user_id, video)
     video.close()
     return 0
