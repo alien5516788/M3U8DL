@@ -90,11 +90,13 @@ def concat():
         pass
     
     temp_clips = natsorted(temp_clips)
-    print(temp_clips)
 
     for i in temp_clips: # create video objects
-        clips.append(VideoFileClip(i))
-    
+        try:
+            clips.append(VideoFileClip(i))
+        except:
+            pass
+
     final = concatenate_videoclips(clips)
     final.write_videofile("segments/output"+str(funcs.file_extention), codec = "libx264", logger = None)
     return 0
