@@ -88,10 +88,10 @@ def concat():
     except:
         pass
     
-    temp_clips.sort()
+    temp_clips = sorted(temp_clips)
+    print(temp_clips)
 
     for i in temp_clips: # create video objects
-        print(i)
         clips.append(VideoFileClip(i))
     
     final = concatenate_videoclips(clips)
