@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 import os
 import glob
 from moviepy.editor import VideoFileClip, concatenate_videoclips
+from natsort import natsorted
 import bot_config
 import funcs
 import chunk_reader
@@ -88,7 +89,7 @@ def concat():
     except:
         pass
     
-    temp_clips = sorted(temp_clips, key=int)
+    temp_clips = natsorted(temp_clips)
     print(temp_clips)
 
     for i in temp_clips: # create video objects
