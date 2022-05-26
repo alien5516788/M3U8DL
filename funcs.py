@@ -77,15 +77,23 @@ def check_size():
 
 
 def concat(): 
+    def concat(): 
     bot.send_message(funcs.user_id,"Concatenating video.")
+    temp_clips = []
     clips = []  
-    try:
+
+    try: # create a list of segments
         for input in glob.glob("segments/*"+str(funcs.file_extention)):
             print(input)
-            clips.append(VideoFileClip(input))
+            temp_clips.append(input)
+            # clips.append(VideoFileClip(input))
     except:
         pass
-    clips.sort()
+    temp_clips.sort() # sort segments
+    
+    for input in temp_clips: # create video objects
+        clips.append(VideoFileClip(input))
+    
     final = concatenate_videoclips(clips)
     final.write_videofile("segments/output"+str(funcs.file_extention), codec = "libx264", logger = None)
     return 0
