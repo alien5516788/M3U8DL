@@ -86,7 +86,6 @@ def concat():
         for input in glob.glob("segments/*"+str(funcs.file_extention)):
             print(input)
             temp_clips.append(input)
-            # clips.append(VideoFileClip(input))
     except:
         pass
     temp_clips.sort() # sort segments
