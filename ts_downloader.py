@@ -14,7 +14,7 @@ def download_ts_vod():
    x = 1
    while x <= (len(chunk_reader.chunk_dict)/2):
       funcs.check_size() # check if the dir size exceeds
-      if funcs.dir_size >= 200000000:
+      if funcs.dir_size >= 1500000000:
          funcs.concat()
          funcs.send_video()
          funcs.remove_all()
@@ -58,7 +58,7 @@ def download_ts_live():
    x = 1
    while x <= (len(chunk_reader.chunk_dict)/2):
       funcs.check_size() # check if the dir size exceeds
-      if funcs.dir_size >= 200000000:
+      if funcs.dir_size >= 1500000000:
          funcs.concat()
          funcs.send_video()
          funcs.remove_all()
