@@ -88,7 +88,7 @@ def concat():
     except:
         pass
     
-    temp_clips = sorted(temp_clips)
+    temp_clips = sorted(temp_clips, key=int)
     print(temp_clips)
 
     for i in temp_clips: # create video objects
