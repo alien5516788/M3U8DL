@@ -79,7 +79,8 @@ def start_download():
                   bot.send_message(funcs.user_id,"Unknown error occured.")
                   funcs.close_session()
                   break
-      except:
+      except Exception as e:
+         print(e)
          bot.send_message(funcs.user_id,"Unknown error occured.")
          funcs.close_session()
          continue
