@@ -30,8 +30,9 @@ def download_ts_vod():
          file_extention = file_name.rstrip("\n").split(".", 1) # get file extention
          funcs.file_extention = ("."+str(file_extention[1]))
          try: # download the file
-            r = requests.get( y, allow_redirects=True).content # request file
-            open("segments/"+str(file_name), "wb").write(r)
+            r = requests.get( y, allow_redirects=True) # request file
+            print(r.status_code)
+            open("segments/"+str(file_name), "wb").write(r.content)
             status_bar.segment_number = x # segment number
             status_bar.status_bar_vod() # running status bar instance
             x = x+1 # move to next url
@@ -39,8 +40,9 @@ def download_ts_vod():
    
          except:
             try: # try to download again if failed
-               r = requests.get( y, allow_redirects=True).content
-               open("segments/"+str(file_name), "wb").write(r)
+               r = requests.get( y, allow_redirects=True)
+               print(r.status_code)
+               open("segments/"+str(file_name), "wb").write(r.content)
                status_bar.segment_number = x # segment number
                status_bar.status_bar_vod()# running status bar instance
                x = x+1 # move to next url
