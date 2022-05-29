@@ -50,7 +50,7 @@ def start_download():
                elif funcs.m3u8_type == "live.m3u8":
                   bot.send_message(funcs.user_id,"Live detected.")
                   funcs.edit_message_id = bot.send_message(funcs.user_id,"Recording live.").message_id 
-                  status_bar.segment_number = 1
+                  status_bar.segment_number = 0
                   while True:
                      if funcs.session_status == True:
                         chunk_reader.download_chunk()
