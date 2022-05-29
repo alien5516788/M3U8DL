@@ -4,6 +4,7 @@ import bot_config
 import funcs
 import chunk_reader
 import ts_downloader
+import status_bar
 
 
 bot = bot_config.bot
@@ -49,6 +50,7 @@ def start_download():
                elif funcs.m3u8_type == "live.m3u8":
                   bot.send_message(funcs.user_id,"Live detected.")
                   funcs.edit_message_id = bot.send_message(funcs.user_id,"Recording live.").message_id 
+                  status_bar.segment_number = 1
                   while True:
                      if funcs.session_status == True:
                         chunk_reader.download_chunk()
