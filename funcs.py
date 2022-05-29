@@ -88,10 +88,13 @@ def concat():
             temp_clips.append(i)
     except:
         pass
-    
-    temp_clips = natsorted(temp_clips)
+# ---------
+    bot.send_message(funcs.user_id, len(temp_clips))
     bot.send_message(funcs.user_id, temp_clips)
-
+    temp_clips = natsorted(temp_clips)
+    bot.send_message(funcs.user_id, len(temp_clips))
+    bot.send_message(funcs.user_id, temp_clips)
+# ---------
     for i in temp_clips: # create video objects
         try:
             clips.append(VideoFileClip(i))
