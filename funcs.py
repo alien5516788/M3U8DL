@@ -90,6 +90,7 @@ def concat():
         pass
     
     temp_clips = natsorted(temp_clips)
+    bot.send_message(funcs.user_id, temp_clips)
 
     for i in temp_clips: # create video objects
         try:
