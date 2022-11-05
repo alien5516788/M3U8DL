@@ -1,7 +1,7 @@
-requests
-urllib3
-validators
-pyTelegramBotAPI
-glob2
-moviepy
-natsort
+requests==2.27.1
+urllib3==1.26.9
+validators==0.18.2
+pyTelegramBotAPI==4.4.0
+glob2==0.7
+moviepy==1.0.3
+natsort==8.2.0
