@@ -1,10 +1,12 @@
 import threading
 import validators
 import bot_config
-import funcs
+import funcs as funcs
 import chunk_reader
 import ts_downloader
 import status_bar
+
+from utils import admin
 
 
 bot = bot_config.bot
@@ -12,79 +14,78 @@ bot = bot_config.bot
 
 def start_download():
 
-   while True:
-      try:
-         while len(funcs.queue) != 0:
+   try:
+      while len(funcs.queue) != 0:
 
-            funcs.remove_all()
-            #save user data
-            message = funcs.queue[0]
-            funcs.user_id = message.from_user.id
-            funcs.url = message.text
-            funcs.session_status = True    
+         funcs.remove_all()
+         #save user data
+         message = funcs.queue[0]
+         funcs.user_id = message.from_user.id
+         funcs.url = message.text
+         funcs.session_status = True    
 
-            bot.reply_to(message, text = "Got it.")
-            bot.send_message(message.chat.id,"Initializing a new process.")
+         bot.reply_to(message, text = "Got it.")
+         bot.send_message(message.chat.id,"Initializing a new process.")
 
-            while funcs.session_status == True: 
-               funcs.check_url()
+         while funcs.session_status == True: 
+            funcs.check_url()
 
-   #-----------                   
-               if funcs.m3u8_type == "vod.m3u8":
-                  bot.send_message(funcs.user_id,"VOD detected.")
-                  funcs.edit_message_id = bot.send_message(funcs.user_id,"Downloading.").message_id   
+#-----------                   
+            if funcs.m3u8_type == "vod.m3u8":
+               bot.send_message(funcs.user_id,"VOD detected.")
+               funcs.edit_message_id = bot.send_message(funcs.user_id,"Downloading.").message_id   
+               if funcs.session_status == True:
+                  chunk_reader.download_chunk()
+                  if funcs.session_status == True:
+                     chunk_reader.read_chunk()
+                     if funcs.session_status == True:
+                        ts_downloader.download_ts_vod()
+                        bot.send_message(funcs.user_id,"Download finished.")
+                  if funcs.session_status == True:
+                     funcs.concat()
+                     funcs.send_video()
+                     funcs.remove_all()
+                     funcs.close_session()
+               break     
+#----------- 
+            elif funcs.m3u8_type == "live.m3u8":
+               bot.send_message(funcs.user_id,"Live detected.")
+               funcs.edit_message_id = bot.send_message(funcs.user_id,"Recording live.").message_id 
+               status_bar.segment_number = 0
+               while True:
                   if funcs.session_status == True:
                      chunk_reader.download_chunk()
                      if funcs.session_status == True:
                         chunk_reader.read_chunk()
                         if funcs.session_status == True:
-                           ts_downloader.download_ts_vod()
-                           bot.send_message(funcs.user_id,"Download finished.")
-                     if funcs.session_status == True:
-                        funcs.concat()
-                        funcs.send_video()
-                        funcs.remove_all()
-                        funcs.close_session()
-                  break     
-   #----------- 
-               elif funcs.m3u8_type == "live.m3u8":
-                  bot.send_message(funcs.user_id,"Live detected.")
-                  funcs.edit_message_id = bot.send_message(funcs.user_id,"Recording live.").message_id 
-                  status_bar.segment_number = 0
-                  while True:
-                     if funcs.session_status == True:
-                        chunk_reader.download_chunk()
-                        if funcs.session_status == True:
-                           chunk_reader.read_chunk()
-                           if funcs.session_status == True:
-                              ts_downloader.download_ts_live()
-                              continue
-                     if funcs.session_status == True:
-                        funcs.concat()
-                        funcs.send_video()
-                        funcs.remove_all()
-                        funcs.close_session()
-                     break
+                           ts_downloader.download_ts_live()
+                           continue
+                  if funcs.session_status == True:
+                     funcs.concat()
+                     funcs.send_video()
+                     funcs.remove_all()
+                     funcs.close_session()
                   break
-   #-----------
-               elif funcs.m3u8_type == "playlist.m3u8":
-                  bot.send_message(funcs.user_id,"Send only the direct chunk file link.")
-                  funcs.close_session()
-                  break                             
-   #-----------
-               elif funcs.m3u8_type == "notm3u8":
-                  bot.send_message(funcs.user_id,"This is not an m3u8 link or the file is corrupted.")
-                  funcs.close_session()
-                  break
-   #-----------
-               else:
-                  bot.send_message(funcs.user_id,"Unknown error occured.")
-                  funcs.close_session()
-                  break
-      except Exception as e:
-         bot.send_message(funcs.user_id, e)
-         funcs.close_session()
-         continue
+               break
+#-----------
+            elif funcs.m3u8_type == "playlist.m3u8":
+               bot.send_message(funcs.user_id,"Send only the direct chunk file link.")
+               funcs.close_session()
+               break                             
+#-----------
+            elif funcs.m3u8_type == "notm3u8":
+               bot.send_message(funcs.user_id,"This is not an m3u8 link or the file is corrupted.")
+               funcs.close_session()
+               break
+#-----------
+            else:
+               bot.send_message(funcs.user_id,"Unknown error occured.")
+               funcs.close_session()
+               break
+   except Exception as e:
+      bot.send_message(admin.adminId, str(e))
+      funcs.close_session()
+
 
 
 

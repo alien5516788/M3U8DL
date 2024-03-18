@@ -1,7 +1,7 @@
 import requests
 import validators
 import bot_config
-import funcs
+import funcs as funcs
 import status_bar
 
 

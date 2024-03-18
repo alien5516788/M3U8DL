@@ -1,7 +1,7 @@
 import requests
 from urllib.parse import urlparse
 import os
-import funcs
+import funcs as funcs
 import bot_config
 import chunk_reader
 import status_bar

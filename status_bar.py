@@ -1,5 +1,5 @@
 import bot_config
-import funcs
+import funcs as funcs
 
 bot = bot_config.bot 
 

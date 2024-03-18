@@ -6,7 +6,7 @@ import glob
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from natsort import natsorted
 import bot_config
-import funcs
+import funcs as funcs
 import chunk_reader
 
 bot = bot_config.bot
