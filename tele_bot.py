@@ -2,15 +2,15 @@ import threading
 import validators
 
 import bot_config
-import funcs
-import chunk_reader
-import ts_downloader
-import status_bar
-
-from utils import admin
-from utils import queue_manager
-from utils import session
+import admin
+import queue_manager
+import session
 from utils import utils
+from utils import chunk_reader
+from utils import ts_downloader
+from utils import status_bar
+
+import funcs
 
 # bot
 bot = bot_config.bot
