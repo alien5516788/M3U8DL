@@ -37,7 +37,7 @@ def validate_message(): # check if url is valid
         funcs.valid_url = False
         return 0
 
-
+# moved
 m3u8_type = str()
 def check_url(): # check if the url is a playlist or chunk 
     r = requests.get( funcs.url, allow_redirects=True).content # downloads file
@@ -65,7 +65,7 @@ def check_url(): # check if the url is a playlist or chunk
         return 0
 
 
-
+# moved
 dir_size = 0
 def check_size():
     size = 0
@@ -76,7 +76,7 @@ def check_size():
     funcs.dir_size = size       
     return 0
 
-
+# moved
 def concat(): 
 
     bot.send_message(funcs.user_id,"Concatenating video.")
@@ -101,6 +101,7 @@ def concat():
     final.write_videofile("segments/output"+str(funcs.file_extention), codec = "libx264", logger = None)
     return 0
 
+#moved
 def send_video():
     bot.send_message(funcs.user_id,"Sending video.")
     video = open("segments/output"+str(funcs.file_extention), "rb") # send the video
@@ -108,7 +109,7 @@ def send_video():
     video.close()
     return 0
 
-
+#moved
 def remove_all():
     try:
         for f in glob.glob("segments/*"):

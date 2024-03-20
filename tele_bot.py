@@ -8,9 +8,6 @@ import session
 from utils import utils
 from utils import chunk_reader
 from utils import ts_downloader
-from utils import status_bar
-
-import funcs
 
 # bot
 bot = bot_config.bot
@@ -19,11 +16,11 @@ def start_download():
 
    try:
 
-      while len(queue_manager.queue_users) != 0:
+      while len(queue_manager.queueUsers) != 0:
 
-         funcs.remove_all()
+         utils.remove_all()
          # start session
-         message = funcs.queue[0]
+         message = queue_manager.queue[0]
          session.userId = message.from_user.id
          session.url = message.text
          session.sessionStatus = True    
@@ -34,71 +31,109 @@ def start_download():
          # process loop
          # The session status is periodically checked
 
-         while funcs.session_status == True:
+         while session.sessionStatus == True:
 
             m3u8Type = utils.get_m3u8_type(session.url)
 
             # vod
                        
             if m3u8Type == "vod":
+
                bot.send_message(session.userId, "VOD detected.")
                session.downloadStatus = bot.send_message(session.userId, "Downloading...").message_id   
-               if session.sessionStatus == True:
-                  chunk_reader.download_chunk()
-                  if session.sessionStatus == True:
-                     chunk_reader.read_chunk()
-                     if session.sessionStatus == True:
-                        ts_downloader.download_ts_vod()
-                        bot.send_message(funcs.user_id,"Download finished.")
-                  if session.sessionStatus == True:
-                     funcs.concat()
-                     funcs.send_video()
-                     funcs.remove_all()
-                     session.close_session()
+               
+               if session.sessionStatus == False: break
+
+               c = chunk_reader.download_chunk(session.url)
+               if c == False:
+                  bot.send_message(session.userId, "No files recieved.Download finished.")
+                  session.close_session()
+
+               if session.sessionStatus == False: break
+
+               c = chunk_reader.read_chunk(session.pathName)
+               if c == False:
+                  bot.send_message(session.userId, "This is not an m3u8 file or the file is corrupted.")
+                  session.close_session()
+
+               if session.sessionStatus == False: break
+
+               tsCount = len(c / 2)
+               session.segCount = tsCount
+               # bot.send_message(session.userId, str(tsCount) + " parts found.")
+
+               ts_downloader.download_ts(c, "vod")
+               bot.send_message(session.userId, "Download finished.")
+
+               if session.sessionStatus == False: break
+                  
+               utils.concat()
+               utils.send_video()
+               utils.remove_all()
+            
                break     
             
             # live
 
             elif m3u8Type == "live":
-               bot.send_message(session.userId,"Live detected.")
-               session.downloadStatus = bot.send_message(session.userId, "Recording live.").message_id 
-               status_bar.segment_number = 0
+
+               bot.send_message(session.userId, "Live detected.")
+               session.downloadStatus = bot.send_message(session.userId, "Recording. ").message_id 
+               
                while True:
-                  if session.sessionStatus == True:
-                     chunk_reader.download_chunk()
-                     if session.sessionStatus == True:
-                        chunk_reader.read_chunk()
-                        if session.sessionStatus == True:
-                           ts_downloader.download_ts_live()
-                           continue
-                  if session.sessionStatus == True:
-                     funcs.concat()
-                     funcs.send_video()
-                     funcs.remove_all()
+
+                  if session.sessionStatus == False: break
+                  
+                  c = chunk_reader.download_chunk(session.url)
+                  if c == False:
+                     bot.send_message(session.userId, "No files recieved.Download finished.")
                      session.close_session()
-                  break
+
+                  if session.sessionStatus == False: break
+                    
+                  c = chunk_reader.read_chunk(session.pathName)
+                  if c == False:
+                     bot.send_message(session.userId, "This is not an m3u8 file or the file is corrupted.")
+                     session.close_session()
+                  
+                  if session.sessionStatus == False: break
+                  
+                  tsCount = len(c / 2)
+                  session.segCount = tsCount
+                  # bot.send_message(session.userId, str(tsCount) + " parts found.")
+
+                  ts_downloader.download_ts(c, "live")
+                  bot.send_message(session.userId, "Download finished.")
+
+                  continue
+
+               if session.sessionStatus == False: break
+
+               utils.concat()
+               utils.send_video()
+               utils.remove_all()
+            
                break
             
             # playlist
 
             elif m3u8Type == "playlist":
-               bot.send_message(funcs.user_id,"Send only the direct chunk file link.")
-               session.close_session()
+               bot.send_message(session.userId, "Send only the direct chunk file link.")
                break                             
             
             # not m3u8
 
             elif m3u8Type == "notm3u8":
-               bot.send_message(funcs.user_id,"This is not an m3u8 link or the file is corrupted.")
-               session.close_session()
+               bot.send_message(session.userId, "This is not an m3u8 link or the file is corrupted.")
                break
             
             # error
 
             else:
-               bot.send_message(funcs.user_id,"Unknown error occured.")
-               session.close_session()
+               bot.send_message(session.userId, "Unknown error occured.")
                break
+
+         session.close_session()
 
    except Exception as e:
       bot.send_message(admin.adminId, str(e))
@@ -129,17 +164,17 @@ def clear(message):
 
    chatId = str(message.chat.id)
 
-   if chatId in queue_manager.queue_users:
+   if chatId in queue_manager.queueUsers:
       
       # terminate process and remove request
-      if queue_manager.queue_users.index(chatId) == 0:
+      if queue_manager.queueUsers.index(chatId) == 0:
          bot.send_message(chatId, "Process terminated.")
          bot.send_message(chatId, "Request removed from queue.")
          session.close_session()
       
       # remove request
       else:
-         queue_manager.queue_users.remove(chatId) 
+         queue_manager.queueUsers.remove(chatId) 
          queue_manager.queue.pop(chatId) 
          bot.send_message(chatId, "Request removed from queue.")
             
@@ -153,8 +188,8 @@ def queue(message):
 
    chatId = str(message.chat.id)
    
-   if chatId in queue_manager.queue_users:
-      bot.send_message(chatId, f"Request is positioned at {queue_manager.queue_users.index(chatId)} .")
+   if chatId in queue_manager.queueUsers:
+      bot.send_message(chatId, f"Request is positioned at {queue_manager.queueUsers.index(chatId)} .")
    else:
       bot.send_message(chatId, "You don't have any requests.")
    
@@ -173,9 +208,9 @@ def url_message(message):
    if valid == True:
 
       # queue request
-      if chatId not in funcs.queue_users:
+      if chatId not in queue_manager.queueUsers:
          queue_manager.queue[chatId] = message
-         queue_manager.queue_users.append(chatId)
+         queue_manager.queueUsers.append(chatId)
          bot.send_message(chatId, "Request queued.")
 
       # reject request

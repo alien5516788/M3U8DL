@@ -1,98 +1,68 @@
 import requests
 from urllib.parse import urlparse
 import os
-import funcs as funcs
-import bot_config
-import utils.chunk_reader as chunk_reader
-import utils.status_bar as status_bar
 
+import bot_config
+import session
+from utils import utils
 
 bot = bot_config.bot
 
+def download_ts(chunkUrls : dict, streamType : str):
 
-def download_ts_vod():
-   x = 1
-   while x <= (len(chunk_reader.chunk_dict)/2):
-      funcs.check_size() # check if the dir size exceeds
-      if funcs.dir_size >= 1500000000:
-         funcs.concat()
-         funcs.send_video()
-         funcs.remove_all()
-         pass
-      else: # if not pass
-         pass
+   tsCount = len(chunkUrls) / 2
+   currentTs = 0
 
-      if funcs.session_status == True:
-         # downloads ts files
-         y = chunk_reader.chunk_dict["segment"+str(x)]
-         a = urlparse(y)
-         file_name = (os.path.basename(a.path)) # get file name
-         file_extention = file_name.rstrip("\n").split(".", 1) # get file extention
-         funcs.file_extention = ("."+str(file_extention[1]))
-         try: # download the file
-            r = requests.get( y, allow_redirects=True).content # request file
-            open("segments/"+str(file_name), "wb").write(r)
-            status_bar.segment_number = x # segment number
-            status_bar.status_bar_vod() # running status bar instance
-            x = x+1 # move to next url
-            continue
+   while currentTs < tsCount:
+      
+      # check if chunk dir size exceeded
+      # concatenate and send video if size exceeds
+      s = utils.get_chunk_dir_size()
+      
+      if s >= 500000000: # 500 MB
+
+         bot.send_message(session.userId, "Concatenating video.")
+         utils.concat()
+
+         bot.send_message(session.userId, "Sending video.")
+         video = utils.send_video()
+         bot.send_video(session.userId, video)
    
-         except:
-            try: # try to download again if failed
-               r = requests.get( y, allow_redirects=True).content
-               open("segments/"+str(file_name), "wb").write(r)
-               status_bar.segment_number = x # segment number
-               status_bar.status_bar_vod()# running status bar instance
-               x = x+1 # move to next url
-               continue
-            except:
-               x = x+1 # move to next url
-               continue
-      else:
-         funcs.close_session()
+         utils.remove_all()
+
+      if session.sessionStatus == False: 
+         session.close_session()
          break
-   return 0
 
+      # read chunk url
+      chunkUrl = chunkUrls["segment" + str(currentTs)]
+      
+      # get chunk filename and file extension
+      a = urlparse(chunkUrl)
+      fileName = (os.path.basename(a.path))
+      fileExtention = fileName.rstrip("\n").split(".", 1)
+      session.fileExtension = ("." + str(fileExtention[1]))
+      
+      # download chunk
+      try:
 
-def download_ts_live():
-   x = 1
-   while x <= (len(chunk_reader.chunk_dict)/2):
-      funcs.check_size() # check if the dir size exceeds
-      if funcs.dir_size >= 1500000000:
-         funcs.concat()
-         funcs.send_video()
-         funcs.remove_all()
-         pass
-      else: # if not pass
-         pass
-
-      if funcs.session_status == True:
-         # downloads ts files
-         y = chunk_reader.chunk_dict["segment"+str(x)]
-         a = urlparse(y)
-         file_name = (os.path.basename(a.path)) # get file name
-         file_extention = file_name.rstrip("\n").split(".", 1) # get file extention
-         funcs.file_extention = ("."+str(file_extention[1]))
-         try:
-            r = requests.get( y, allow_redirects=True).content # request file
-            open("segments/"+str(file_name), "wb").write(r)
-            status_bar.segment_number = status_bar.segment_number + 1 # segment number
-            status_bar.status_bar_live() # running status bar instance
-            x = x+1 # move to next url
-            continue
+         r = requests.get(chunkUrl, allow_redirects=True).content
+         with open("downloads/segments/"+str(fileName), "wb") as f:
+            f.write(r)
+         
+         # update status bar
+         session.segsDownloaded += 1
+        
+         if streamType == "vod":
+            bot.edit_message_text(chat_id = session.userId, text = "Downloading " + str(session.segsDownloaded) 
+               + " of " + str(session.segCount),  message_id = session.downloadStatus)
+         else:
+            bot.edit_message_text(chat_id = session.userId, text = "Recording " + str(session.segsDownloaded) 
+               + " of ?",  message_id = session.downloadStatus)
+      
+         currentTs += 1
    
-         except:
-            try:# try to download again if failed
-               r = requests.get( y, allow_redirects=True).content
-               open("segments/"+str(file_name), "wb").write(r)
-               status_bar.segment_number = status_bar.segment_number + 1 # segment number
-               status_bar.status_bar_live() # running status bar instance
-               x = x+1 # move to next url
-               continue
-            except:
-               x = x+1  # move to next url
-               continue
-      else:
-         funcs.close_session()
-         break
-   return 0
+      except:
+         currentTs += 1
+
+      continue

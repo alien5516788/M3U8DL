@@ -10,6 +10,8 @@ fileExtension : str
 
 # bot notification message Id
 downloadStatus : int
+segCount = 0
+segsDownloaded = 0
 
 def close_session():
 
@@ -24,6 +26,7 @@ def close_session():
     fileExtention = ""
 
     downloadStatus = 0
+    segsDownloaded = 0
 
     
     # # segments   

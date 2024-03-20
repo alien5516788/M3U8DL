@@ -4,6 +4,20 @@ import os.path
 
 import session
 
+
+
+import requests
+import validators
+from urllib.parse import urlparse
+import os
+import glob
+from moviepy.editor import VideoFileClip, concatenate_videoclips
+from natsort import natsorted
+import bot_config
+import funcs as funcs
+import utils.chunk_reader as chunk_reader
+
+
 # m3u8 type
 def get_m3u8_type(url : str) -> str:
     
@@ -29,3 +43,47 @@ def get_m3u8_type(url : str) -> str:
         else: return "playlist"
 
     else: return "notm3u8"
+
+
+def get_chunk_dir_size():
+
+    size = 0
+
+    for path, dirs, files in os.walk("downloads/segments"):
+        for f in files:
+            fp = os.path.join(path, f)
+            size += os.path.getsize(fp)
+
+    return size
+
+
+
+def concat(): 
+
+    tempClips = []
+
+    for chunk in glob.glob("downloads/segments/*" + str(session.fileExtension)):
+            tempClips.append(chunk)
+ 
+    tempClips = natsorted(tempClips)
+    clips = []
+
+    for chunk in tempClips: # create video objects
+        clips.append(VideoFileClip(chunk))
+
+    finalClip = concatenate_videoclips(clips)
+    finalClip.write_videofile("downloads/segments/output" + str(session.fileExtension), codec = "libx264", logger = None)
+
+
+
+
+def send_video():
+
+    with open("downloads/segments/output" + str(session.fileExtension), "rb") as video:# send the video
+        return video
+
+
+def remove_all():
+
+    for chunk in glob.glob("downloads/segments/*"):
+        os.remove(chunk)
