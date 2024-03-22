@@ -12,6 +12,7 @@ fileExtension : str
 downloadStatus : int
 segCount = 0
 segsDownloaded = 0
+videoParts = 0
 
 def close_session():
 
@@ -27,6 +28,7 @@ def close_session():
 
     downloadStatus = 0
     segsDownloaded = 0
+    videoParts = 0
 
     
     # # segments   

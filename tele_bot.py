@@ -6,7 +6,7 @@ import admin
 import queue_manager
 import session
 from utils import utils
-from utils import chunk_reader
+from utils import m3u8_reader
 from utils import ts_downloader
 
 # bot
@@ -38,80 +38,94 @@ def start_download():
             # vod
                        
             if m3u8Type == "vod":
-
+               
+               # vod detected
                bot.send_message(session.userId, "VOD detected.")
                session.downloadStatus = bot.send_message(session.userId, "Downloading...").message_id   
                
                if session.sessionStatus == False: break
-
-               c = chunk_reader.download_chunk(session.url)
+               
+               # downlaod m3u8 file
+               c = m3u8_reader.download_m3u8(session.url)
                if c == False:
-                  bot.send_message(session.userId, "No files recieved.Download finished.")
+                  bot.send_message(session.userId, "Failed to download m3u8 file. Download finished.")
                   session.close_session()
 
                if session.sessionStatus == False: break
-
-               c = chunk_reader.read_chunk(session.pathName)
+               
+               # read m3u8 file
+               c = m3u8_reader.read_m3u8(session.pathName)
                if c == False:
                   bot.send_message(session.userId, "This is not an m3u8 file or the file is corrupted.")
                   session.close_session()
 
                if session.sessionStatus == False: break
-
-               tsCount = len(c / 2)
+               
+               # download ts files
+               tsCount = len(c) # type: ignore
                session.segCount = tsCount
-               # bot.send_message(session.userId, str(tsCount) + " parts found.")
-
-               ts_downloader.download_ts(c, "vod")
+         
+               ts_downloader.download_ts(c, "vod") # type: ignore
                bot.send_message(session.userId, "Download finished.")
 
                if session.sessionStatus == False: break
-                  
+               
+               # send video
                utils.concat()
-               utils.send_video()
-               utils.remove_all()
-            
+
+               bot.send_message(session.userId, "Sending video final .")
+               video = utils.send_video()
+               bot.send_video(session.userId, video)
+               
                break     
             
             # live
 
             elif m3u8Type == "live":
-
+               
+               # live detected
                bot.send_message(session.userId, "Live detected.")
                session.downloadStatus = bot.send_message(session.userId, "Recording. ").message_id 
                
+               # check loop
                while True:
 
                   if session.sessionStatus == False: break
                   
-                  c = chunk_reader.download_chunk(session.url)
+                  # downlaod m3u8 file
+                  c = m3u8_reader.download_m3u8(session.url)
                   if c == False:
-                     bot.send_message(session.userId, "No files recieved.Download finished.")
+                     bot.send_message(session.userId, "Failed to download m3u8 file. Download finished.")
                      session.close_session()
 
                   if session.sessionStatus == False: break
-                    
-                  c = chunk_reader.read_chunk(session.pathName)
+                  
+                  # read m3u8 file
+                  c = m3u8_reader.read_m3u8(session.pathName)
                   if c == False:
                      bot.send_message(session.userId, "This is not an m3u8 file or the file is corrupted.")
                      session.close_session()
                   
                   if session.sessionStatus == False: break
                   
-                  tsCount = len(c / 2)
+                  # download ts files
+                  tsCount = len(c) # type: ignore
                   session.segCount = tsCount
-                  # bot.send_message(session.userId, str(tsCount) + " parts found.")
-
-                  ts_downloader.download_ts(c, "live")
-                  bot.send_message(session.userId, "Download finished.")
+          
+                  ts_downloader.download_ts(c, "live") # type: ignore
 
                   continue
 
                if session.sessionStatus == False: break
 
+               bot.send_message(session.userId, "Download finished.")
+
+               # send video
                utils.concat()
-               utils.send_video()
-               utils.remove_all()
+
+               bot.send_message(session.userId, "Sending video final .")
+               video = utils.send_video()
+               bot.send_video(session.userId, video)
             
                break
             
@@ -132,13 +146,18 @@ def start_download():
             else:
                bot.send_message(session.userId, "Unknown error occured.")
                break
-
+         
+         # close session and remove previous downloads
          session.close_session()
+         utils.remove_all()
 
    except Exception as e:
-      bot.send_message(admin.adminId, str(e))
-      session.close_session()
 
+      utils.add_log(str(e))
+      bot.send_message(admin.adminId, str(e))
+
+      session.close_session()
+      utils.remove_all()
 
 # start downloading loop
 download_thread = threading.Thread(target = start_download)
@@ -157,7 +176,6 @@ def start(message):
 ---To view queue position, press /queue .\n
 *Encrypted streams are not supported yet.''')
       
-
 # clear request
 @bot.message_handler(commands = ["clear"])
 def clear(message):
@@ -165,22 +183,22 @@ def clear(message):
    chatId = str(message.chat.id)
 
    if chatId in queue_manager.queueUsers:
+
+      queue_manager.queueUsers.remove(chatId) 
+      queue_manager.queue.pop(chatId)
       
-      # terminate process and remove request
+      # terminate process
       if queue_manager.queueUsers.index(chatId) == 0:
+
+         session.sessionStatus = False
          bot.send_message(chatId, "Process terminated.")
-         bot.send_message(chatId, "Request removed from queue.")
-         session.close_session()
       
       # remove request
       else:
-         queue_manager.queueUsers.remove(chatId) 
-         queue_manager.queue.pop(chatId) 
          bot.send_message(chatId, "Request removed from queue.")
             
    else:
       bot.send_message(chatId, "You don't have any requests.") 
-
 
 # view queue position
 @bot.message_handler(commands = ["queue"])
@@ -190,19 +208,17 @@ def queue(message):
    
    if chatId in queue_manager.queueUsers:
       bot.send_message(chatId, f"Request is positioned at {queue_manager.queueUsers.index(chatId)} .")
+   
    else:
       bot.send_message(chatId, "You don't have any requests.")
    
-   
-
-
 # wait for url message
 @bot.message_handler(func = lambda message:True)
 def url_message(message):
 
    chatId = str(message.chat.id)
    
-   # check fo urls
+   # check for urls
    valid = validators.url(message.text)
 
    if valid == True:
@@ -218,7 +234,7 @@ def url_message(message):
          bot.send_message(chatId, "You already have a request.")
  
    else:
-      bot.send_message(chatId,"Url is not valid.")
+      bot.send_message(chatId, "Url is invalid.")
 
-#waits for new messages 
+# wait for new messages 
 bot.polling() 

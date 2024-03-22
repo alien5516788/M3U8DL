@@ -8,45 +8,49 @@ from utils import utils
 
 bot = bot_config.bot
 
-def download_ts(chunkUrls : dict, streamType : str):
+# download ts file
+def download_ts(tsUrls : list, streamType : str):
 
-   tsCount = len(chunkUrls) / 2
+   tsCount = len(tsUrls)
    currentTs = 0
 
    while currentTs < tsCount:
+
+      if session.sessionStatus == False: break
       
-      # check if chunk dir size exceeded
+      # check if storage size exceeded
       # concatenate and send video if size exceeds
       s = utils.get_chunk_dir_size()
       
       if s >= 500000000: # 500 MB
-
-         bot.send_message(session.userId, "Concatenating video.")
+         
+         # concatenate
+         bot.send_message(session.userId, "Concatenating video part " 
+                          + str(session.videoParts) + " .")
          utils.concat()
-
-         bot.send_message(session.userId, "Sending video.")
+         
+         # send
+         bot.send_message(session.userId, "Sending video "
+                          + str(session.videoParts) + " .")
          video = utils.send_video()
          bot.send_video(session.userId, video)
-   
+         
+         # remove downloads
          utils.remove_all()
 
-      if session.sessionStatus == False: 
-         session.close_session()
-         break
-
-      # read chunk url
-      chunkUrl = chunkUrls["segment" + str(currentTs)]
+      # read ts url
+      tsUrl = tsUrls[currentTs]
       
-      # get chunk filename and file extension
-      a = urlparse(chunkUrl)
+      # get ts filename and file extension
+      a = urlparse(tsUrl)
       fileName = (os.path.basename(a.path))
       fileExtention = fileName.rstrip("\n").split(".", 1)
       session.fileExtension = ("." + str(fileExtention[1]))
       
-      # download chunk
+      # download ts file
       try:
 
-         r = requests.get(chunkUrl, allow_redirects=True).content
+         r = requests.get(tsUrl, allow_redirects = True).content
          with open("downloads/segments/"+str(fileName), "wb") as f:
             f.write(r)
          
@@ -63,6 +67,8 @@ def download_ts(chunkUrls : dict, streamType : str):
          currentTs += 1
    
       except:
+
+         utils.add_log("Download failed, TS file " + str(currentTs))
          currentTs += 1
 
       continue

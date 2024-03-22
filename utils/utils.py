@@ -1,6 +1,7 @@
 import requests
 from urllib.parse import urlparse
 import os.path
+import time
 
 import session
 
@@ -15,7 +16,7 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips
 from natsort import natsorted
 import bot_config
 import funcs as funcs
-import utils.chunk_reader as chunk_reader
+import utils.m3u8_reader as m3u8_reader
 
 
 # m3u8 type
@@ -87,3 +88,10 @@ def remove_all():
 
     for chunk in glob.glob("downloads/segments/*"):
         os.remove(chunk)
+
+def add_log(des : str):
+
+    cTime = time.ctime()
+
+    with open("downloads/log.txt", "a") as log:
+        log.write(cTime + " : " + des + "\n")
