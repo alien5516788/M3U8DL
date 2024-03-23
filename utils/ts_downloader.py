@@ -23,21 +23,8 @@ def download_ts(tsUrls : list, streamType : str):
       s = utils.get_segment_dir_size()
       
       if s >= 3000000: # 500000000 500 MB
-         
          # set finsihed status
          session.finished = True
-         
-         # concatenate and send video
-         bot.send_message(session.userId, "Concatenating video...")
-         utils.concat()
-         
-         bot.send_message(session.userId, "Sending video...")
-         with open("downloads/segments/output" + str(session.fileExtension), "rb") as video:
-            bot.send_video(session.userId, video)
-         
-         # remove downloads
-         utils.remove_all()
-
          break
 
       # read ts url
