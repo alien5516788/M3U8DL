@@ -20,7 +20,7 @@ def download_ts(tsUrls : list, streamType : str):
       
       # check if storage size exceeded
       # concatenate and send video if size exceeds
-      s = utils.get_chunk_dir_size()
+      s = utils.get_segment_dir_size()
       
       if s >= 500000000: # 500 MB
          

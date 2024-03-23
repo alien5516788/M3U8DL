@@ -12,23 +12,27 @@ fileExtension : str
 downloadStatus : int
 segCount = 0
 segsDownloaded = 0
-videoParts = 0
+videoParts = 1
 
 def close_session():
-
+    
+    # session
     sessionStatus = False
+    userId = ""
     
    # funcs.queue.remove(funcs.queue[0])
    # funcs.queue_users.remove(funcs.queue_users[0])
     
+    # url
     url = ""
-    pathName = ""
+    fileName = ""
     pathName = ""
     fileExtention = ""
 
     downloadStatus = 0
+    segCount = 0
     segsDownloaded = 0
-    videoParts = 0
+    videoParts = 1
 
     
     # # segments   

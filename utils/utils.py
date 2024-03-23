@@ -1,25 +1,14 @@
 import requests
 from urllib.parse import urlparse
-import os.path
-import time
-
-import session
-
-
-
-import requests
-import validators
-from urllib.parse import urlparse
 import os
+import time
 import glob
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from natsort import natsorted
-import utils.bot_config as bot_config
-import funcs as funcs
-import utils.m3u8_reader as m3u8_reader
 
+import session
 
-# m3u8 type
+# get m3u8 type
 def get_m3u8_type(url : str) -> str:
     
     # download file
@@ -45,8 +34,8 @@ def get_m3u8_type(url : str) -> str:
 
     else: return "notm3u8"
 
-
-def get_chunk_dir_size():
+# get ts file folder size
+def get_segment_dir_size() -> int:
 
     size = 0
 
@@ -57,40 +46,46 @@ def get_chunk_dir_size():
 
     return size
 
-
-
+# concatenate is files into a single video
 def concat(): 
 
     tempClips = []
-
-    for chunk in glob.glob("downloads/segments/*" + str(session.fileExtension)):
-            tempClips.append(chunk)
- 
+    
+    # get all ts files
+    for ts in glob.glob("downloads/segments/*" + str(session.fileExtension)):
+        tempClips.append(ts)
+    
+    # sort in order
     tempClips = natsorted(tempClips)
     clips = []
-
-    for chunk in tempClips: # create video objects
-        clips.append(VideoFileClip(chunk))
-
+    
+    # create video objects
+    for ts in tempClips: 
+        clips.append(VideoFileClip(ts))
+    
+    # concatenate into a single video
     finalClip = concatenate_videoclips(clips)
     finalClip.write_videofile("downloads/segments/output" + str(session.fileExtension), codec = "libx264", logger = None)
 
-
-
-
+# send video buffer
 def send_video():
 
     with open("downloads/segments/output" + str(session.fileExtension), "rb") as video:# send the video
         return video
 
-
+# remove downloads
 def remove_all():
-
+    
+    # clear content in m3u8 file
+    open("downloads/temp.m3u8", "w").close()
+    
+    # clear ts file folder
     for chunk in glob.glob("downloads/segments/*"):
         os.remove(chunk)
 
+# add a log
 def add_log(des : str):
-
+    
     cTime = time.ctime()
 
     with open("downloads/log.txt", "a") as log:

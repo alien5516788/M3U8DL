@@ -181,19 +181,21 @@ def start(message):
 def clear(message):
 
    chatId = str(message.chat.id)
-
+   
+   # terminate process
+   # remove request
    if chatId in queue_manager.queueUsers:
 
       queue_manager.queueUsers.remove(chatId) 
       queue_manager.queue.pop(chatId)
       
-      # terminate process
+      # doesn't use close_session,
+      # because it might cause problems in downlaod thread
       if queue_manager.queueUsers.index(chatId) == 0:
-
+         
          session.sessionStatus = False
          bot.send_message(chatId, "Process terminated.")
       
-      # remove request
       else:
          bot.send_message(chatId, "Request removed from queue.")
             
