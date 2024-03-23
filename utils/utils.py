@@ -68,12 +68,6 @@ def concat():
     finalClip = concatenate_videoclips(clips)
     finalClip.write_videofile("downloads/segments/output" + str(session.fileExtension), codec = "libx264", logger = None)
 
-# send video buffer
-def send_video():
-
-    with open("downloads/segments/output" + str(session.fileExtension), "rb") as video:# send the video
-        return video
-
 # remove downloads
 def remove_all():
     

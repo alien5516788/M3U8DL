@@ -85,10 +85,10 @@ def start_download():
                if session.sessionStatus == False: break
                
                # concatenate and send video
-               bot.send_message(session.userId, "Concatenating video...")
+               bot.send_message(session.userId, "Concatenating video.")
                utils.concat()
                
-               bot.send_message(session.userId, "Sending video...")
+               bot.send_message(session.userId, "Sending video.")
                with open("downloads/segments/output" + str(session.fileExtension), "rb") as video:
                   bot.send_video(session.userId, video)
          
@@ -137,10 +137,10 @@ def start_download():
                bot.send_message(session.userId, "Download finished.")
 
                # concatenate and send video
-               bot.send_message(session.userId, "Concatenating video...")
+               bot.send_message(session.userId, "Concatenating video.")
                utils.concat()
                
-               bot.send_message(session.userId, "Sending video...")
+               bot.send_message(session.userId, "Sending video.")
                with open("downloads/segments/output" + str(session.fileExtension), "rb") as video:
                   bot.send_video(session.userId, video)
          
@@ -259,7 +259,8 @@ def send_log(message):
       bot.send_message(session.adminId, "Admin only !")
       return
    
-   bot.send_document(session.adminId, "downloads/log.txt")
+   with open("downloads/log.txt") as log:
+      bot.send_message(session.adminId, log.read())
 
 # stop bot (admin only)
 @bot.message_handler(commands = ["stopbot"])
