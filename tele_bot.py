@@ -12,7 +12,12 @@ from utils import ts_downloader
 # bot
 bot = bot_config.bot
 
+utils.add_log("--------Bot started--------")
+bot.send_message(admin.adminId, "--------Bot started--------")
+
 def start_download():
+
+   utils.add_log("Download thread started")
 
    try:
 
@@ -22,35 +27,82 @@ def start_download():
          utils.remove_all()
 
          # start session
-         session.sessionStatus = True    
          message = queue_manager.queue[0]
+
+         session.sessionStatus = True 
          session.userId = message.from_user.id
+
          session.url = message.text
 
          bot.reply_to(message, text = "Got it.")
          bot.send_message(session.userId, "Initializing a new process.")
          
-         # process loop
+         # start process
          # The session status is periodically checked
 
-         while session.sessionStatus == True:
+         m3u8Type = utils.get_m3u8_type(session.url)
 
-            m3u8Type = utils.get_m3u8_type(session.url)
+         # vod
+                     
+         if m3u8Type == "vod":
+            
+            # vod detected
+            bot.send_message(session.userId, "VOD detected.")
+            session.downloadStatus = bot.send_message(session.userId, "Downloading...").message_id   
+            
+            if session.sessionStatus == False: break
+            
+            # downlaod m3u8 file
+            c = m3u8_reader.download_m3u8(session.url)
+            if c == False:
+               bot.send_message(session.userId, "Failed to download m3u8 file.")
+               session.close_session()
 
-            # vod
-                       
-            if m3u8Type == "vod":
-               
-               # vod detected
-               bot.send_message(session.userId, "VOD detected.")
-               session.downloadStatus = bot.send_message(session.userId, "Downloading...").message_id   
-               
+            if session.sessionStatus == False: break
+            
+            # read m3u8 file
+            c = m3u8_reader.read_m3u8(session.pathName)
+            if c == False:
+               bot.send_message(session.userId, "This is not an m3u8 file or the file is corrupted.")
+               session.close_session()
+
+            if session.sessionStatus == False: break
+            
+            # download ts files
+            tsCount = len(c) # type: ignore
+            session.segCount = tsCount
+      
+            ts_downloader.download_ts(c, "vod") # type: ignore
+            bot.send_message(session.userId, "Download finished.")
+
+            if session.sessionStatus == False: break
+            
+            # concatenate and send video
+            utils.concat()
+
+            bot.send_message(session.userId, "Sending video final.")
+            video = utils.send_video()
+            bot.send_video(session.userId, video)
+            
+            break     
+         
+         # live
+
+         elif m3u8Type == "live":
+            
+            # live detected
+            bot.send_message(session.userId, "Live detected.")
+            session.downloadStatus = bot.send_message(session.userId, "Recording...").message_id 
+            
+            # check loop
+            while True:
+
                if session.sessionStatus == False: break
                
                # downlaod m3u8 file
                c = m3u8_reader.download_m3u8(session.url)
                if c == False:
-                  bot.send_message(session.userId, "Failed to download m3u8 file. Download finished.")
+                  bot.send_message(session.userId, "Failed to download m3u8 file.")
                   session.close_session()
 
                if session.sessionStatus == False: break
@@ -60,98 +112,52 @@ def start_download():
                if c == False:
                   bot.send_message(session.userId, "This is not an m3u8 file or the file is corrupted.")
                   session.close_session()
-
+               
                if session.sessionStatus == False: break
                
                # download ts files
                tsCount = len(c) # type: ignore
                session.segCount = tsCount
          
-               ts_downloader.download_ts(c, "vod") # type: ignore
-               bot.send_message(session.userId, "Download finished.")
+               ts_downloader.download_ts(c, "live") # type: ignore
 
-               if session.sessionStatus == False: break
-               
-               # send video
-               utils.concat()
+               continue
 
-               bot.send_message(session.userId, "Sending video final .")
-               video = utils.send_video()
-               bot.send_video(session.userId, video)
-               
-               break     
-            
-            # live
+            if session.sessionStatus == False: break
 
-            elif m3u8Type == "live":
-               
-               # live detected
-               bot.send_message(session.userId, "Live detected.")
-               session.downloadStatus = bot.send_message(session.userId, "Recording. ").message_id 
-               
-               # check loop
-               while True:
+            bot.send_message(session.userId, "Download finished.")
 
-                  if session.sessionStatus == False: break
-                  
-                  # downlaod m3u8 file
-                  c = m3u8_reader.download_m3u8(session.url)
-                  if c == False:
-                     bot.send_message(session.userId, "Failed to download m3u8 file. Download finished.")
-                     session.close_session()
+            # concatenate and send video
+            utils.concat()
 
-                  if session.sessionStatus == False: break
-                  
-                  # read m3u8 file
-                  c = m3u8_reader.read_m3u8(session.pathName)
-                  if c == False:
-                     bot.send_message(session.userId, "This is not an m3u8 file or the file is corrupted.")
-                     session.close_session()
-                  
-                  if session.sessionStatus == False: break
-                  
-                  # download ts files
-                  tsCount = len(c) # type: ignore
-                  session.segCount = tsCount
-          
-                  ts_downloader.download_ts(c, "live") # type: ignore
-
-                  continue
-
-               if session.sessionStatus == False: break
-
-               bot.send_message(session.userId, "Download finished.")
-
-               # send video
-               utils.concat()
-
-               bot.send_message(session.userId, "Sending video final .")
-               video = utils.send_video()
-               bot.send_video(session.userId, video)
-            
-               break
-            
-            # playlist
-
-            elif m3u8Type == "playlist":
-               bot.send_message(session.userId, "Send only the direct chunk file link.")
-               break                             
-            
-            # not m3u8
-
-            elif m3u8Type == "notm3u8":
-               bot.send_message(session.userId, "This is not an m3u8 link or the file is corrupted.")
-               break
-            
-            # error
-
-            else:
-               bot.send_message(session.userId, "Unknown error occured.")
-               break
+            bot.send_message(session.userId, "Sending video final.")
+            video = utils.send_video()
+            bot.send_video(session.userId, video)
          
-         # close session and remove previous downloads
-         session.close_session()
-         utils.remove_all()
+            break
+         
+         # playlist
+
+         elif m3u8Type == "playlist":
+            bot.send_message(session.userId, "Send only the direct m3u8 file link.")
+            break                             
+         
+         # not m3u8
+
+         elif m3u8Type == "notm3u8":
+            bot.send_message(session.userId, "This is not an m3u8 link or the file is corrupted.")
+            break
+         
+         # error
+
+         else:
+            utils.add_log("Unknown error occured.")
+            bot.send_message(session.userId, "Unknown error occured.")
+            break
+      
+      # close session and remove previous downloads
+      session.close_session()
+      utils.remove_all()
 
    except Exception as e:
 
@@ -240,7 +246,7 @@ def url_message(message):
    else:
       bot.send_message(chatId, "Url is invalid.")
 
-# Only for admin
+# start bot (admin only)
 @bot.message_handler(commands = ["startbot"])
 def start_bot(message):
 
@@ -254,8 +260,21 @@ def start_bot(message):
       bot.send_message(admin.adminId, "Bot is already running.")
       return
    
-   bot.send_message(admin.adminId, "Bot started.")
+   bot.send_message(admin.adminId, "Thread restarted.")
+   utils.add_log("Thread restarted.")
    download_thread.start()
+
+# send log file (admin only)
+@bot.message_handler(commands = ["log"])
+def send_log(message):
+
+   chatId = str(message.chat.id)
+
+   if chatId != admin.adminId:
+      bot.send_message(admin.adminId, "Admin only !")
+      return
+   
+   bot.send_document(admin.adminId, "downloads/log.txt")
 
 # wait for new messages 
 bot.polling() 

@@ -13,12 +13,13 @@ def get_m3u8_type(url : str) -> str:
     
     # download file
     r = requests.get(url, allow_redirects = True).content
-    open("downloads/temp.m3u8", "wb").write(r)
+    with open("downloads/temp.m3u8", "wb") as f:
+        f.write(r)
 
-    # get file name and path
+    # get file name and path name
     a = urlparse(url)
     session.fileName = (os.path.basename(a.path))
-    session.pathName = (os.path.dirname(session.url))
+    session.pathName = (os.path.dirname(url))
 
     m3u8 = open("downloads/temp.m3u8", "r")
 
