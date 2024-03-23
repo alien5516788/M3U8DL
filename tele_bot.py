@@ -17,13 +17,15 @@ def start_download():
    try:
 
       while len(queue_manager.queueUsers) != 0:
-
+         
+         # remove any garbage files
          utils.remove_all()
+
          # start session
+         session.sessionStatus = True    
          message = queue_manager.queue[0]
          session.userId = message.from_user.id
          session.url = message.text
-         session.sessionStatus = True    
 
          bot.reply_to(message, text = "Got it.")
          bot.send_message(session.userId, "Initializing a new process.")
@@ -154,13 +156,13 @@ def start_download():
    except Exception as e:
 
       utils.add_log(str(e))
-      bot.send_message(admin.adminId, str(e))
+      bot.send_message(admin.adminId, "M3U8DL Error: " + str(e))
 
       session.close_session()
       utils.remove_all()
 
 # start downloading loop
-download_thread = threading.Thread(target = start_download)
+download_thread = threading.Thread(target = start_download, daemon = True)
 download_thread.start()
 
 # wait for start command
@@ -237,6 +239,23 @@ def url_message(message):
  
    else:
       bot.send_message(chatId, "Url is invalid.")
+
+# Only for admin
+@bot.message_handler(commands = ["startbot"])
+def start_bot(message):
+
+   chatId = str(message.chat.id)
+
+   if chatId != admin.adminId:
+      bot.send_message(admin.adminId, "Admin only !")
+      return
+      
+   if download_thread.is_alive() == True:
+      bot.send_message(admin.adminId, "Bot is already running.")
+      return
+   
+   bot.send_message(admin.adminId, "Bot started.")
+   download_thread.start()
 
 # wait for new messages 
 bot.polling() 
