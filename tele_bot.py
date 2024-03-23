@@ -277,5 +277,22 @@ def send_log(message):
    
    bot.send_document(admin.adminId, "downloads/log.txt")
 
+# stop bot (admin only)
+@bot.message_handler(commands = ["stopbot"])
+def stop_bot(message):
+
+   chatId = str(message.chat.id)
+
+   if chatId != admin.adminId:
+      bot.send_message(admin.adminId, "Admin only !")
+      return
+   
+   print("--------Bot stopped--------")
+   bot.send_message(admin.adminId, "--------Bot stopped--------")
+   utils.add_log("--------Bot stopped--------")
+   
+   # stop infinit polling
+   bot.stop_polling()
+   
 # wait for new messages 
 bot.polling() 

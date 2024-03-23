@@ -2,4 +2,4 @@
 queue : dict
 
 # queue users
-queueUsers : list
+queueUsers = []
