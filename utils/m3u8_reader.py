@@ -30,8 +30,7 @@ def read_m3u8(pathName : str):
    m3u8File = open("downloads/temp.m3u8", "r").readlines()
 
    # check if the file is an m3u8 file
-   if "#EXTM3U" not in m3u8File[0]:
-      
+   if "#EXTM3U" != m3u8File[0].rstrip("\n"):
       add_log("This is not an m3u8 file.")
       return False
    

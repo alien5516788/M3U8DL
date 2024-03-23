@@ -22,21 +22,23 @@ def download_ts(tsUrls : list, streamType : str):
       # concatenate and send video if size exceeds
       s = utils.get_segment_dir_size()
       
-      if s >= 500000000: # 500 MB
+      if s >= 3000000: # 500000000 500 MB
          
-         # concatenate
-         bot.send_message(session.userId, "Concatenating video part " 
-                          + str(session.videoParts) + " .")
+         # set finsihed status
+         session.finished = True
+         
+         # concatenate and send video
+         bot.send_message(session.userId, "Concatenating video...")
          utils.concat()
          
-         # send
-         bot.send_message(session.userId, "Sending video "
-                          + str(session.videoParts) + " .")
-         video = utils.send_video()
-         bot.send_video(session.userId, video)
+         bot.send_message(session.userId, "Sending video...")
+         with open("downloads/segments/output" + str(session.fileExtension), "rb") as video:
+            bot.send_video(session.userId, video)
          
          # remove downloads
          utils.remove_all()
+
+         break
 
       # read ts url
       tsUrl = tsUrls[currentTs]

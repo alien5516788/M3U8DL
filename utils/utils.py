@@ -21,7 +21,7 @@ def get_m3u8_type(url : str) -> str:
     session.fileName = (os.path.basename(a.path))
     session.pathName = (os.path.dirname(url))
 
-    m3u8 = open("downloads/temp.m3u8", "r")
+    m3u8 = open("downloads/temp.m3u8", "r").read()
 
     if "#EXTM3U" in m3u8:
 

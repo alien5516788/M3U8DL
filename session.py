@@ -1,3 +1,10 @@
+# admin id
+adminId = "6334791136"
+
+# queue urls
+queue = {}
+queueUsers = []
+
 # session
 sessionStatus = False
 userId : str
@@ -12,9 +19,16 @@ fileExtension : str
 downloadStatus : int
 segCount = 0
 segsDownloaded = 0
-videoParts = 1
+finished = False # Used for live
 
+# close session and reset data
 def close_session():
+
+    # remove current user
+    if len(queueUsers) > 0:
+        tempId = queueUsers[0]
+        queue.pop(tempId)
+        queueUsers.remove(tempId)
     
     # session
     sessionStatus = False
@@ -32,24 +46,4 @@ def close_session():
     downloadStatus = 0
     segCount = 0
     segsDownloaded = 0
-    videoParts = 1
-
-    
-    # # segments   
-    # try: # close output video if opened
-    #     video = open("segments/output"+str(funcs.file_extention), "rb") 
-    #     video.close() 
-    #     pass
-    # except:
-    #     pass
-    
-    # # remove all
-    # try:
-    #     for f in glob.glob("segments/*"):
-    #         os.remove(f) 
-    # except:
-    #     pass
-
-    # # temp m3u8
-    # open("temp.m3u8", "w").close() 
-    # return 0
+    finished = False
