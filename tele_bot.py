@@ -12,6 +12,7 @@ from utils import ts_downloader
 # bot
 bot = bot_config.bot
 
+print("--------Bot started--------")
 utils.add_log("--------Bot started--------")
 bot.send_message(admin.adminId, "--------Bot started--------")
 
