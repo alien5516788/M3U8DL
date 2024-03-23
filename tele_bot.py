@@ -1,7 +1,7 @@
 import threading
 import validators
 
-import bot_config
+import utils.bot_config as bot_config
 import admin
 import queue_manager
 import session

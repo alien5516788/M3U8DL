@@ -1,7 +1,7 @@
 import requests
 import validators
 
-import bot_config
+import utils.bot_config as bot_config
 from utils.utils import add_log
 
 bot = bot_config.bot
@@ -20,7 +20,6 @@ def download_m3u8(url : str) -> bool:
       return True
    
    except:
-
       add_log("Failed to download m3u8 file.")
       return False
    

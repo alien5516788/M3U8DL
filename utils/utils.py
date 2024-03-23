@@ -14,7 +14,7 @@ import os
 import glob
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from natsort import natsorted
-import bot_config
+import utils.bot_config as bot_config
 import funcs as funcs
 import utils.m3u8_reader as m3u8_reader
 

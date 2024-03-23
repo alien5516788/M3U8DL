@@ -2,7 +2,7 @@ import requests
 from urllib.parse import urlparse
 import os
 
-import bot_config
+import utils.bot_config as bot_config
 import session
 from utils import utils
 
