@@ -22,7 +22,7 @@ def download_ts(tsUrls : list, streamType : str):
       # concatenate and send video if size exceeds
       s = utils.get_segment_dir_size()
       
-      if s >= 100000000: # 100 MB . This should be changed
+      if s >= 20000000: # 20 MB . This should be changed
          # set finsihed status
          session.finished = True
          break
