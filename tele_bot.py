@@ -95,7 +95,11 @@ def start_download():
                
                bot.send_message(session.userId, "Sending video.")
                with open("downloads/segments/output" + str(session.fileExtension), "rb") as video:
-                  bot.send_video(session.userId, video)
+                  try:
+                     bot.send_video(session.userId, video)
+                  except:
+                     utils.add_log("Unknown error occured while sending video.")
+                     bot.send_message(session.adminId, "Unknown error occured while sending video.")
          
                break     
             
@@ -147,7 +151,11 @@ def start_download():
                
                bot.send_message(session.userId, "Sending video.")
                with open("downloads/segments/output" + str(session.fileExtension), "rb") as video:
-                  bot.send_video(session.userId, video)
+                  try:
+                     bot.send_video(session.userId, video)
+                  except:
+                     utils.add_log("Unknown error occured while sending video.")
+                     bot.send_message(session.adminId, "Unknown error occured while sending video.")
          
                break
             
