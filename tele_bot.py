@@ -1,5 +1,6 @@
 import threading
 import validators
+import os
 
 import utils.bot_config as bot_config
 import session
@@ -12,7 +13,11 @@ bot = bot_config.bot
 
 # bot started message
 print("--------Bot started--------")
+# initialize download directory
+os.mkdir("downloads")
+os.mkdir("downloads/segments")
 open("downloads/log.txt", "w").close()
+open("downloads/temp.m3u8", "w").close()
 utils.add_log("--------Bot started--------")
 bot.send_message(session.adminId, "--------Bot started--------")
 
