@@ -1,8 +1,6 @@
-⚠️ Archived – Learning/Experimental Project
+⚠️ Archived – Experimental Project
 
-Built during an earlier exploration phase.
-Left as-is for reference; not actively maintained.
-May not work with newer Telegram Bot API changes or modern environments without modifications.
+May not work with new telegram bot API or application changes
 
 # M3U8 Telegram Downloader Bot
 
@@ -13,7 +11,7 @@ A simple Telegram bot (Python) that downloads and processes `.m3u8` video stream
 ## Features
 
 - Accepts m3u8 URLs via Telegram
-- Supports VOD downloads
+- Supports VOD and LIVE stream downloads
 - Supports live stream recording (basic)
 - Queue-based request handling
 - Automatic video concatenation and sending
